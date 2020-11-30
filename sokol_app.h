@@ -7353,18 +7353,25 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 /* android loop thread */
 _SOKOL_PRIVATE bool _sapp_android_init_egl(void) {
+    char buffer[256];
+    #define my_log_thing(...) sprintf(buffer, __VA_ARGS__); SOKOL_LOG(buffer);
+    my_log_thing("SOKOL_APP: Asserting _sapp.android.display == EGL_NO_DISPLAY");
     SOKOL_ASSERT(_sapp.android.display == EGL_NO_DISPLAY);
+    my_log_thing("SOKOL_APP: Asserting _sapp.android.context == EGL_NO_CONTEXT");
     SOKOL_ASSERT(_sapp.android.context == EGL_NO_CONTEXT);
 
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
+        my_log_thing("SOKOL_APP: display == EGL_NO_DISPLAY -> TRUE");
         return false;
     }
     if (eglInitialize(display, NULL, NULL) == EGL_FALSE) {
+        my_log_thing("SOKOL_APP: eglInitialize(display, NULL, NULL) == EGL_FALSE -> TRUE");
         return false;
     }
 
     EGLint alpha_size = _sapp.desc.alpha ? 8 : 0;
+    my_log_thing("SOKOL_APP: _sapp.desc.alpha: %d", _sapp.desc.alpha);
     const EGLint cfg_attributes[] = {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
         EGL_RED_SIZE, 8,
@@ -7375,9 +7382,13 @@ _SOKOL_PRIVATE bool _sapp_android_init_egl(void) {
         EGL_STENCIL_SIZE, 0,
         EGL_NONE,
     };
+    EGLint config_num;
+    eglChooseConfig(display, cfg_attributes, 0,0, &config_num);
+    my_log_thing("SOKOL_APP: Number of available configs matching our attributes: %d", config_num);
     EGLConfig available_cfgs[32];
     EGLint cfg_count;
     eglChooseConfig(display, cfg_attributes, available_cfgs, 32, &cfg_count);
+    my_log_thing("SOKOL_APP: Actual ammount of configs returned: %d", cfg_count);
     SOKOL_ASSERT(cfg_count > 0);
     SOKOL_ASSERT(cfg_count <= 32);
 
@@ -7386,7 +7397,20 @@ _SOKOL_PRIVATE bool _sapp_android_init_egl(void) {
     bool exact_cfg_found = false;
     for (int i = 0; i < cfg_count; ++i) {
         EGLConfig c = available_cfgs[i];
-        EGLint r, g, b, a, d;
+        EGLint r, g, b, a, d, s;
+        EGLBoolean bool1 = eglGetConfigAttrib(display, c, EGL_RED_SIZE, &r);
+        my_log_thing("SOKOL_APP: RED: %s - %d", bool1 ? "True" : "False", r);
+        EGLBoolean bool2 = eglGetConfigAttrib(display, c, EGL_GREEN_SIZE, &g);
+        my_log_thing("SOKOL_APP: GRN: %s - %d", bool2 ? "True" : "False", g);
+        EGLBoolean bool3 = eglGetConfigAttrib(display, c, EGL_BLUE_SIZE, &b);
+        my_log_thing("SOKOL_APP: BLU: %s - %d", bool3 ? "True" : "False", b);
+        EGLBoolean bool4 = eglGetConfigAttrib(display, c, EGL_ALPHA_SIZE, &a);
+        my_log_thing("SOKOL_APP: ALP: %s - %d", bool4 ? "True" : "False", a);
+        EGLBoolean bool5 = eglGetConfigAttrib(display, c, EGL_DEPTH_SIZE, &d);
+        my_log_thing("SOKOL_APP: DEP: %s - %d", bool5 ? "True" : "False", d);
+        EGLBoolean bool6 = eglGetConfigAttrib(display, c, EGL_STENCIL_SIZE, &s);
+        my_log_thing("SOKOL_APP: STN: %s - %d", bool6 ? "True" : "False", s);
+
         if (eglGetConfigAttrib(display, c, EGL_RED_SIZE, &r) == EGL_TRUE &&
             eglGetConfigAttrib(display, c, EGL_GREEN_SIZE, &g) == EGL_TRUE &&
             eglGetConfigAttrib(display, c, EGL_BLUE_SIZE, &b) == EGL_TRUE &&
@@ -7395,13 +7419,16 @@ _SOKOL_PRIVATE bool _sapp_android_init_egl(void) {
             r == 8 && g == 8 && b == 8 && (alpha_size == 0 || a == alpha_size) && d == 16) {
             exact_cfg_found = true;
             config = c;
+            my_log_thing("SOKOL_APP: Exact cfg was found");
             break;
         }
     }
     if (!exact_cfg_found) {
+        my_log_thing("SOKOL_APP: Exact cfg not found!");
         config = available_cfgs[0];
     }
 
+    my_log_thing("SOKOL_APP: _sapp.desc.gl_force_gles2: %d", _sapp.desc.gl_force_gles2);
     EGLint ctx_attributes[] = {
         #if defined(SOKOL_GLES3)
             EGL_CONTEXT_CLIENT_VERSION, _sapp.desc.gl_force_gles2 ? 2 : 3,
@@ -7410,8 +7437,12 @@ _SOKOL_PRIVATE bool _sapp_android_init_egl(void) {
         #endif
         EGL_NONE,
     };
+    my_log_thing("SOKOL_APP: (ctx_attributes[1]) Using GLES version: %d", ctx_attributes[1]);
     EGLContext context = eglCreateContext(display, config, EGL_NO_CONTEXT, ctx_attributes);
     if (context == EGL_NO_CONTEXT) {
+        my_log_thing("SOKOL_APP: Couldn't create context!");
+        EGLint egl_error = eglGetError();
+        my_log_thing("SOKOL_APP: Error reported by eglGetError is: %d", egl_error);
         return false;
     }
 
