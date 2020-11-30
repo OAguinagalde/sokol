@@ -1151,7 +1151,7 @@ typedef struct sapp_html5_fetch_request {
 } sapp_html5_fetch_request;
 
 /* user-provided functions */
-extern sapp_desc sokol_main(int argc, char* argv[]);
+extern sapp_desc sokol_main(int argc, char* argv[], void* extra);
 
 /* returns true after sokol-app has been initialized */
 SOKOL_APP_API_DECL bool sapp_isvalid(void);
@@ -2783,7 +2783,7 @@ _SOKOL_PRIVATE void _sapp_macos_run(const sapp_desc* desc) {
 /* MacOS entry function */
 #if !defined(SOKOL_NO_ENTRY)
 int main(int argc, char* argv[]) {
-    sapp_desc desc = sokol_main(argc, argv);
+    sapp_desc desc = sokol_main(argc, argv, NULL);
     _sapp_macos_run(&desc);
     return 0;
 }
@@ -3441,7 +3441,7 @@ _SOKOL_PRIVATE void _sapp_ios_run(const sapp_desc* desc) {
 /* iOS entry function */
 #if !defined(SOKOL_NO_ENTRY)
 int main(int argc, char* argv[]) {
-    sapp_desc desc = sokol_main(argc, argv);
+    sapp_desc desc = sokol_main(argc, argv, NULL);
     _sapp_ios_run(&desc);
     return 0;
 }
@@ -4854,7 +4854,7 @@ _SOKOL_PRIVATE void _sapp_emsc_run(const sapp_desc* desc) {
 
 #if !defined(SOKOL_NO_ENTRY)
 int main(int argc, char* argv[]) {
-    sapp_desc desc = sokol_main(argc, argv);
+    sapp_desc desc = sokol_main(argc, argv, NULL);
     _sapp_emsc_run(&desc);
     return 0;
 }
@@ -6321,7 +6321,7 @@ _SOKOL_PRIVATE char** _sapp_win32_command_line_to_utf8_argv(LPWSTR w_command_lin
 #if !defined(SOKOL_NO_ENTRY)
 #if defined(SOKOL_WIN32_FORCE_MAIN)
 int main(int argc, char* argv[]) {
-    sapp_desc desc = sokol_main(argc, argv);
+    sapp_desc desc = sokol_main(argc, argv, NULL);
     _sapp_win32_run(&desc);
     return 0;
 }
@@ -6333,7 +6333,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     _SOKOL_UNUSED(nCmdShow);
     int argc_utf8 = 0;
     char** argv_utf8 = _sapp_win32_command_line_to_utf8_argv(GetCommandLineW(), &argc_utf8);
-    sapp_desc desc = sokol_main(argc_utf8, argv_utf8);
+    sapp_desc desc = sokol_main(argc_utf8, argv_utf8, NULL);
     _sapp_win32_run(&desc);
     SOKOL_FREE(argv_utf8);
     return 0;
@@ -7341,7 +7341,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     _SOKOL_UNUSED(hPrevInstance);
     _SOKOL_UNUSED(lpCmdLine);
     _SOKOL_UNUSED(nCmdShow);
-    sapp_desc desc = sokol_main(0, nullptr);
+    sapp_desc desc = sokol_main(0, nullptr, NULL);
     _sapp_uwp_run(&desc);
     return 0;
 }
@@ -7937,7 +7937,7 @@ JNIEXPORT
 void ANativeActivity_onCreate(ANativeActivity* activity, void* saved_state, size_t saved_state_size) {
     SOKOL_LOG("NativeActivity onCreate()");
 
-    sapp_desc desc = sokol_main(0, NULL);
+    sapp_desc desc = sokol_main(0, NULL, activity);
     _sapp_init_state(&desc);
 
     /* start loop thread */
@@ -10091,7 +10091,7 @@ _SOKOL_PRIVATE void _sapp_linux_run(const sapp_desc* desc) {
 
 #if !defined(SOKOL_NO_ENTRY)
 int main(int argc, char* argv[]) {
-    sapp_desc desc = sokol_main(argc, argv);
+    sapp_desc desc = sokol_main(argc, argv, NULL);
     _sapp_linux_run(&desc);
     return 0;
 }
@@ -10122,7 +10122,7 @@ SOKOL_API_IMPL int sapp_run(const sapp_desc* desc) {
 }
 
 /* this is just a stub so the linker doesn't complain */
-sapp_desc sokol_main(int argc, char* argv[]) {
+sapp_desc sokol_main(int argc, char* argv[], void* extra) {
     _SOKOL_UNUSED(argc);
     _SOKOL_UNUSED(argv);
     sapp_desc desc;
