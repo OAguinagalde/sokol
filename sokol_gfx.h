@@ -2530,6 +2530,8 @@ inline void sg_init_pass(sg_pass pass_id, const sg_pass_desc& desc) { return sg_
     #endif
 
     #ifdef SOKOL_GLES2
+    #undef GL_ANGLE_instanced_arrays
+    #undef GL_EXT_draw_instanced
     #   ifdef GL_ANGLE_instanced_arrays
     #       define SOKOL_INSTANCING_ENABLED
     #       define glDrawArraysInstanced(mode, first, count, instancecount)  glDrawArraysInstancedANGLE(mode, first, count, instancecount)
